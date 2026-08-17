@@ -18,81 +18,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
-
 @Configuration
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtFilter) {
+
         this.jwtFilter = jwtFilter;
     }
 
-    // =====================================================
-    // CORS CONFIGURATION
-    // =====================================================
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration configuration =
-                new CorsConfiguration();
-
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "http://localhost:5175",
-                        "https://hrm-2-sooty.vercel.app"
-                )
-        );
-
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS"
-                )
-        );
-
-        configuration.setAllowedHeaders(
-                List.of(
-                        "Authorization",
-                        "Content-Type",
-                        "Accept",
-                        "Origin"
-                )
-        );
-
-        configuration.setExposedHeaders(
-                List.of(
-                        "Authorization",
-                        "Content-Disposition"
-                )
-        );
-
-        configuration.setAllowCredentials(true);
-
-        // Cache preflight response
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
-
-        return source;
-    }
 
     // =====================================================
     // PASSWORD ENCODER
@@ -104,6 +40,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     // =====================================================
     // AUTHENTICATION MANAGER
     // =====================================================
@@ -113,8 +50,10 @@ public class SecurityConfig {
             AuthenticationConfiguration configuration)
             throws Exception {
 
-        return configuration.getAuthenticationManager();
+        return configuration
+                .getAuthenticationManager();
     }
+
 
     // =====================================================
     // SECURITY FILTER CHAIN
@@ -127,35 +66,55 @@ public class SecurityConfig {
 
         http
 
+                // =================================================
                 // CORS
-                .cors(cors ->
-                        cors.configurationSource(
-                                corsConfigurationSource()
-                        )
-                )
+                // =================================================
 
+                .cors(cors -> {
+                    // CorsConfig handles the actual configuration
+                })
+
+
+                // =================================================
                 // CSRF
+                // =================================================
+
                 .csrf(csrf ->
                         csrf.disable()
                 )
 
-                // Authorization
+
+                // =================================================
+                // AUTHORIZATION
+                // =================================================
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // Preflight requests
+                        // -----------------------------------------
+                        // CORS PREFLIGHT
+                        // -----------------------------------------
+
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         )
                         .permitAll()
 
-                        // Authentication
+
+                        // -----------------------------------------
+                        // AUTHENTICATION
+                        // -----------------------------------------
+
                         .requestMatchers(
                                 "/api/auth/**"
                         )
                         .permitAll()
 
-                        // Swagger
+
+                        // -----------------------------------------
+                        // SWAGGER
+                        // -----------------------------------------
+
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -163,13 +122,21 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+
+                        // -----------------------------------------
                         // HR
+                        // -----------------------------------------
+
                         .requestMatchers(
                                 "/api/hr/**"
                         )
                         .hasRole("HR")
 
-                        // Employee
+
+                        // -----------------------------------------
+                        // EMPLOYEE
+                        // -----------------------------------------
+
                         .requestMatchers(
                                 "/api/employee/**"
                         )
@@ -178,23 +145,36 @@ public class SecurityConfig {
                                 "EMPLOYEE"
                         )
 
-                        // Everything else
+
+                        // -----------------------------------------
+                        // EVERYTHING ELSE
+                        // -----------------------------------------
+
                         .anyRequest()
                         .authenticated()
                 )
 
-                // JWT stateless
+
+                // =================================================
+                // SESSION
+                // =================================================
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // JWT filter
+
+                // =================================================
+                // JWT FILTER
+                // =================================================
+
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
+
 
         return http.build();
     }
