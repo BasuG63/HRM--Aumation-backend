@@ -33,9 +33,8 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-
     // =====================================================
-    // CORS
+    // CORS CONFIGURATION
     // =====================================================
 
     @Bean
@@ -48,7 +47,7 @@ public class SecurityConfig {
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:5175",
-                    "https://hrm-2-sooty.vercel.app"
+                        "https://hrm-2-sooty.vercel.app"
                 )
         );
 
@@ -64,7 +63,12 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedHeaders(
-                List.of("*")
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept",
+                        "Origin"
+                )
         );
 
         configuration.setExposedHeaders(
@@ -75,6 +79,9 @@ public class SecurityConfig {
         );
 
         configuration.setAllowCredentials(true);
+
+        // Cache preflight response
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -87,16 +94,15 @@ public class SecurityConfig {
         return source;
     }
 
-
     // =====================================================
     // PASSWORD ENCODER
     // =====================================================
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
-
 
     // =====================================================
     // AUTHENTICATION MANAGER
@@ -109,7 +115,6 @@ public class SecurityConfig {
 
         return configuration.getAuthenticationManager();
     }
-
 
     // =====================================================
     // SECURITY FILTER CHAIN
@@ -137,7 +142,7 @@ public class SecurityConfig {
                 // Authorization
                 .authorizeHttpRequests(auth -> auth
 
-                        // CORS preflight
+                        // Preflight requests
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
@@ -173,18 +178,19 @@ public class SecurityConfig {
                                 "EMPLOYEE"
                         )
 
+                        // Everything else
                         .anyRequest()
                         .authenticated()
                 )
 
-                // Stateless
+                // JWT stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // JWT
+                // JWT filter
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
