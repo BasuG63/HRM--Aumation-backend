@@ -74,10 +74,14 @@ public class CorsConfig {
         configuration.setAllowCredentials(true);
 
         // =====================================================
-        // CACHE PREFLIGHT
+        // PREFLIGHT CACHE
         // =====================================================
 
         configuration.setMaxAge(3600L);
+
+        // =====================================================
+        // REGISTER CONFIGURATION
+        // =====================================================
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -90,18 +94,15 @@ public class CorsConfig {
         return source;
     }
 
-
-    // =========================================================
+    // =====================================================
     // CORS FILTER
-    // =========================================================
+    // =====================================================
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public CorsFilter corsFilter(
-            CorsConfigurationSource corsConfigurationSource) {
+            CorsConfigurationSource source) {
 
-        return new CorsFilter(
-                corsConfigurationSource
-        );
+        return new CorsFilter(source);
     }
 }
