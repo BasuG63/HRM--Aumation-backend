@@ -20,6 +20,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
     public JwtAuthenticationFilter(
             JwtService jwtService,
             CustomUserDetailsService userDetailsService) {
@@ -28,6 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+
+    // =====================================================
+    // JWT AUTHENTICATION FILTER
+    // =====================================================
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -35,8 +45,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+
+        // =================================================
+        // CORS PREFLIGHT REQUEST
+        // =================================================
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+
+            System.out.println(
+                    "CORS PREFLIGHT REQUEST: "
+                            + request.getRequestURI()
+            );
+
+            filterChain.doFilter(request, response);
+
+            return;
+        }
+
+
+        // =================================================
+        // REQUEST INFORMATION
+        // =================================================
+
         String authHeader =
                 request.getHeader("Authorization");
+
 
         System.out.println(
                 "========================================"
@@ -54,6 +87,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         + (authHeader != null)
         );
 
+
+        // =================================================
+        // NO JWT
+        // =================================================
+
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
@@ -61,40 +99,68 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     "No valid JWT Authorization header"
             );
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
+
+
+        // =================================================
+        // EXTRACT TOKEN
+        // =================================================
 
         String token =
                 authHeader.substring(7);
 
+
         try {
+
+            // =============================================
+            // EXTRACT USERNAME / EMAIL
+            // =============================================
 
             String email =
                     jwtService.extractUsername(token);
 
+
             System.out.println(
                     "JWT Email: " + email
             );
+
+
+            // =============================================
+            // AUTHENTICATE USER
+            // =============================================
 
             if (email != null &&
                     SecurityContextHolder
                             .getContext()
                             .getAuthentication() == null) {
 
+
                 UserDetails userDetails =
                         userDetailsService
                                 .loadUserByUsername(email);
+
 
                 System.out.println(
                         "User: "
                                 + userDetails.getUsername()
                 );
 
+
                 System.out.println(
                         "Authorities: "
                                 + userDetails.getAuthorities()
                 );
+
+
+                // =========================================
+                // VALIDATE JWT
+                // =========================================
 
                 boolean valid =
                         jwtService.validateToken(
@@ -102,9 +168,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails
                         );
 
+
                 System.out.println(
                         "JWT Valid: " + valid
                 );
+
+
+                // =========================================
+                // SET AUTHENTICATION
+                // =========================================
 
                 if (valid) {
 
@@ -115,30 +187,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     userDetails.getAuthorities()
                             );
 
+
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource()
                                     .buildDetails(request)
                     );
 
+
                     SecurityContextHolder
                             .getContext()
-                            .setAuthentication(authentication);
+                            .setAuthentication(
+                                    authentication
+                            );
+
 
                     System.out.println(
                             "Authenticated User: "
                                     + authentication.getName()
                     );
 
+
                     System.out.println(
                             "Authenticated Authorities: "
                                     + authentication.getAuthorities()
                     );
+
 
                     System.out.println(
                             "JWT Authentication SUCCESS"
                     );
                 }
             }
+
 
         } catch (Exception e) {
 
@@ -148,6 +228,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             );
         }
 
-        filterChain.doFilter(request, response);
+
+        // =================================================
+        // CONTINUE FILTER CHAIN
+        // =================================================
+
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }
