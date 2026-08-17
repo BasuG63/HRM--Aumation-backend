@@ -29,7 +29,6 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-
     // =====================================================
     // PASSWORD ENCODER
     // =====================================================
@@ -39,7 +38,6 @@ public class SecurityConfig {
 
         return new BCryptPasswordEncoder();
     }
-
 
     // =====================================================
     // AUTHENTICATION MANAGER
@@ -53,7 +51,6 @@ public class SecurityConfig {
         return configuration
                 .getAuthenticationManager();
     }
-
 
     // =====================================================
     // SECURITY FILTER CHAIN
@@ -69,11 +66,12 @@ public class SecurityConfig {
                 // =================================================
                 // CORS
                 // =================================================
+                //
+                // CorsConfig handles the actual CORS rules.
+                //
 
                 .cors(cors -> {
-                    // CorsConfig handles the actual configuration
                 })
-
 
                 // =================================================
                 // CSRF
@@ -82,7 +80,6 @@ public class SecurityConfig {
                 .csrf(csrf ->
                         csrf.disable()
                 )
-
 
                 // =================================================
                 // AUTHORIZATION
@@ -100,16 +97,14 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
-
                         // -----------------------------------------
-                        // AUTHENTICATION
+                        // LOGIN / REGISTER / AUTH
                         // -----------------------------------------
 
                         .requestMatchers(
                                 "/api/auth/**"
                         )
                         .permitAll()
-
 
                         // -----------------------------------------
                         // SWAGGER
@@ -122,9 +117,8 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
-
                         // -----------------------------------------
-                        // HR
+                        // HR APIs
                         // -----------------------------------------
 
                         .requestMatchers(
@@ -132,9 +126,8 @@ public class SecurityConfig {
                         )
                         .hasRole("HR")
 
-
                         // -----------------------------------------
-                        // EMPLOYEE
+                        // EMPLOYEE APIs
                         // -----------------------------------------
 
                         .requestMatchers(
@@ -145,7 +138,6 @@ public class SecurityConfig {
                                 "EMPLOYEE"
                         )
 
-
                         // -----------------------------------------
                         // EVERYTHING ELSE
                         // -----------------------------------------
@@ -154,9 +146,8 @@ public class SecurityConfig {
                         .authenticated()
                 )
 
-
                 // =================================================
-                // SESSION
+                // SESSION MANAGEMENT
                 // =================================================
 
                 .sessionManagement(session ->
@@ -164,7 +155,6 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-
 
                 // =================================================
                 // JWT FILTER
@@ -174,7 +164,6 @@ public class SecurityConfig {
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
-
 
         return http.build();
     }
