@@ -49,6 +49,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // =================================================
         // CORS PREFLIGHT REQUEST
         // =================================================
+        //
+        // Browser sends OPTIONS before POST/PUT/etc.
+        // Do NOT try to authenticate OPTIONS with JWT.
+        //
 
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
@@ -57,7 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             + request.getRequestURI()
             );
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(
+                    request,
+                    response
+            );
 
             return;
         }
@@ -222,10 +229,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
 
+            // =============================================
+            // JWT VALIDATION FAILURE
+            // =============================================
+
             System.out.println(
                     "JWT Authentication FAILED: "
                             + e.getMessage()
             );
+
+            /*
+             * Do not stop the filter chain here.
+             *
+             * Spring Security will decide whether the
+             * requested endpoint requires authentication.
+             */
         }
 
 
