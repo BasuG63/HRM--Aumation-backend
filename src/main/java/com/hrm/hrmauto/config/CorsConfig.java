@@ -11,11 +11,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    /**
-     * CORS configuration for:
-     * - Local React frontend
-     * - Vercel deployed frontend
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -34,7 +29,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // ALLOWED HTTP METHODS
+        // ALLOWED METHODS
         // =====================================================
 
         configuration.setAllowedMethods(
@@ -44,12 +39,13 @@ public class CorsConfig {
                         "PUT",
                         "DELETE",
                         "PATCH",
-                        "OPTIONS"
+                        "OPTIONS",
+                        "HEAD"
                 )
         );
 
         // =====================================================
-        // ALLOWED REQUEST HEADERS
+        // ALLOWED HEADERS
         // =====================================================
 
         configuration.setAllowedHeaders(
@@ -57,7 +53,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // EXPOSED RESPONSE HEADERS
+        // EXPOSED HEADERS
         // =====================================================
 
         configuration.setExposedHeaders(
@@ -68,7 +64,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // ALLOW CREDENTIALS
+        // CREDENTIALS
         // =====================================================
 
         configuration.setAllowCredentials(true);
@@ -80,7 +76,7 @@ public class CorsConfig {
         configuration.setMaxAge(3600L);
 
         // =====================================================
-        // REGISTER CORS CONFIGURATION
+        // REGISTER CORS
         // =====================================================
 
         UrlBasedCorsConfigurationSource source =
