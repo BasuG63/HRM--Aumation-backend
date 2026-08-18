@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,13 +22,19 @@ public class CorsConfig {
         // =====================================================
 
         configuration.setAllowedOrigins(
-        	    List.of(
-        	        "http://localhost:5173",
-        	        "http://localhost:5174",
-        	        "http://localhost:5175",
-        	        "https://hrmauto.vercel.app"
-        	    )
-        	);
+                List.of(
+                        // Local Vite
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "http://localhost:5175",
+
+                        // Vercel Production
+                        "https://hrmauto.vercel.app",
+
+                        // Vercel Preview deployment
+                        "https://hrm-2-qut7cgi-tescom1.vercel.app"
+                )
+        );
 
         // =====================================================
         // ALLOWED METHODS
@@ -79,7 +84,7 @@ public class CorsConfig {
         configuration.setMaxAge(3600L);
 
         // =====================================================
-        // REGISTER CORS CONFIGURATION
+        // REGISTER
         // =====================================================
 
         UrlBasedCorsConfigurationSource source =
