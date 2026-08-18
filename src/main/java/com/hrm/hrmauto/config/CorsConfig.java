@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -14,7 +15,8 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
         // =====================================================
         // ALLOWED ORIGINS
@@ -22,8 +24,15 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(
                 List.of(
+
+                        // Local React development
                         "http://localhost:5173",
                         "http://localhost:5175",
+
+                        // Current Vercel production domain
+                        "https://hrmauto.vercel.app",
+
+                        // Old Vercel domain - keep if still required
                         "https://hrm-2-sooty.vercel.app"
                 )
         );
@@ -76,7 +85,7 @@ public class CorsConfig {
         configuration.setMaxAge(3600L);
 
         // =====================================================
-        // REGISTER CORS
+        // REGISTER CORS CONFIGURATION
         // =====================================================
 
         UrlBasedCorsConfigurationSource source =
