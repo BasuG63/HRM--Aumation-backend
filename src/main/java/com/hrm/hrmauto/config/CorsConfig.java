@@ -4,22 +4,22 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class CorsConfig {
 
+    /**
+     * CORS configuration for:
+     * - Local React frontend
+     * - Vercel deployed frontend
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
         // =====================================================
         // ALLOWED ORIGINS
@@ -34,7 +34,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // ALLOWED METHODS
+        // ALLOWED HTTP METHODS
         // =====================================================
 
         configuration.setAllowedMethods(
@@ -49,7 +49,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // ALLOWED HEADERS
+        // ALLOWED REQUEST HEADERS
         // =====================================================
 
         configuration.setAllowedHeaders(
@@ -57,7 +57,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // EXPOSED HEADERS
+        // EXPOSED RESPONSE HEADERS
         // =====================================================
 
         configuration.setExposedHeaders(
@@ -68,7 +68,7 @@ public class CorsConfig {
         );
 
         // =====================================================
-        // CREDENTIALS
+        // ALLOW CREDENTIALS
         // =====================================================
 
         configuration.setAllowCredentials(true);
@@ -80,7 +80,7 @@ public class CorsConfig {
         configuration.setMaxAge(3600L);
 
         // =====================================================
-        // REGISTER CONFIGURATION
+        // REGISTER CORS CONFIGURATION
         // =====================================================
 
         UrlBasedCorsConfigurationSource source =
@@ -92,17 +92,5 @@ public class CorsConfig {
         );
 
         return source;
-    }
-
-    // =====================================================
-    // CORS FILTER
-    // =====================================================
-
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public CorsFilter corsFilter(
-            CorsConfigurationSource source) {
-
-        return new CorsFilter(source);
     }
 }
