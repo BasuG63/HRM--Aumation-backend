@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
@@ -23,9 +24,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtFilter) {
-
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
@@ -35,7 +34,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
@@ -48,8 +46,7 @@ public class SecurityConfig {
             AuthenticationConfiguration configuration)
             throws Exception {
 
-        return configuration
-                .getAuthenticationManager();
+        return configuration.getAuthenticationManager();
     }
 
     // =====================================================
@@ -66,9 +63,6 @@ public class SecurityConfig {
                 // =================================================
                 // CORS
                 // =================================================
-                //
-                // CorsConfig handles the actual CORS rules.
-                //
 
                 .cors(cors -> {
                 })
@@ -77,9 +71,7 @@ public class SecurityConfig {
                 // CSRF
                 // =================================================
 
-                .csrf(csrf ->
-                        csrf.disable()
-                )
+                .csrf(csrf -> csrf.disable())
 
                 // =================================================
                 // AUTHORIZATION
@@ -98,7 +90,7 @@ public class SecurityConfig {
                         .permitAll()
 
                         // -----------------------------------------
-                        // LOGIN / REGISTER / AUTH
+                        // AUTH APIs
                         // -----------------------------------------
 
                         .requestMatchers(
