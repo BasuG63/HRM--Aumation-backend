@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,10 @@ public class EmployeeEmailService {
 
     private final JavaMailSender mailSender;
     private final EmployeeIdCardPdfService pdfService;
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public EmployeeEmailService(
             JavaMailSender mailSender,
@@ -24,26 +29,42 @@ public class EmployeeEmailService {
         this.pdfService = pdfService;
     }
 
+    // =====================================================
+    // ASYNC EMPLOYEE WELCOME EMAIL
+    // =====================================================
+
+    @Async
     public void sendEmployeeWelcomeEmail(
             Employee employee,
-            String temporaryPassword)
-            throws Exception {
-
-        // =====================================================
-        // 1. GENERATE ID CARD PDF
-        //    PDF contains QR CODE
-        // =====================================================
-
-        byte[] pdf =
-                pdfService.generateIdCard(
-                        employee
-                );
-
-        // =====================================================
-        // 2. CREATE EMAIL
-        // =====================================================
+            String temporaryPassword) {
 
         try {
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "ASYNC EMAIL STARTED FOR: "
+                            + employee.getEmail()
+            );
+
+            // =================================================
+            // 1. GENERATE ID CARD PDF
+            // =================================================
+
+            byte[] pdf =
+                    pdfService.generateIdCard(
+                            employee
+                    );
+
+            System.out.println(
+                    "ID CARD PDF GENERATED"
+            );
+
+            // =================================================
+            // 2. CREATE EMAIL MESSAGE
+            // =================================================
 
             MimeMessage message =
                     mailSender.createMimeMessage();
@@ -101,7 +122,10 @@ public class EmployeeEmailService {
                     + "border:1px solid #ddd;"
                     + "'>"
 
-                    // Header
+                    // =================================================
+                    // HEADER
+                    // =================================================
+
                     + "<div style='"
                     + "background:#1f4e79;"
                     + "color:white;"
@@ -120,7 +144,10 @@ public class EmployeeEmailService {
 
                     + "</div>"
 
-                    // Greeting
+                    // =================================================
+                    // GREETING
+                    // =================================================
+
                     + "<p style='margin-top:25px;'>"
                     + "Dear <b>"
                     + safe(employee.getName())
@@ -132,7 +159,10 @@ public class EmployeeEmailService {
                     + "created by the HR department."
                     + "</p>"
 
-                    // Employee Details
+                    // =================================================
+                    // EMPLOYEE DETAILS
+                    // =================================================
+
                     + "<h3 style='color:#1f4e79;'>"
                     + "Employee Details"
                     + "</h3>"
@@ -174,7 +204,10 @@ public class EmployeeEmailService {
 
                     + "</table>"
 
-                    // Login Details
+                    // =================================================
+                    // LOGIN DETAILS
+                    // =================================================
+
                     + "<h3 style='color:#1f4e79;'>"
                     + "Login Credentials"
                     + "</h3>"
@@ -196,7 +229,10 @@ public class EmployeeEmailService {
 
                     + "</table>"
 
-                    // Important message
+                    // =================================================
+                    // IMPORTANT MESSAGE
+                    // =================================================
+
                     + "<div style='"
                     + "background:#fff3cd;"
                     + "border:1px solid #ffeeba;"
@@ -210,6 +246,10 @@ public class EmployeeEmailService {
 
                     + "</div>"
 
+                    // =================================================
+                    // ID CARD MESSAGE
+                    // =================================================
+
                     + "<p>"
                     + "Your Employee ID Card containing the QR code "
                     + "is attached to this email as a PDF."
@@ -221,6 +261,10 @@ public class EmployeeEmailService {
                     + "</p>"
 
                     + "<br>"
+
+                    // =================================================
+                    // FOOTER
+                    // =================================================
 
                     + "<p>"
                     + "Regards,<br>"
@@ -256,6 +300,11 @@ public class EmployeeEmailService {
             // 9. SEND EMAIL
             // =================================================
 
+            System.out.println(
+                    "SENDING EMAIL TO: "
+                            + employee.getEmail()
+            );
+
             mailSender.send(message);
 
             System.out.println(
@@ -263,12 +312,27 @@ public class EmployeeEmailService {
                             + employee.getEmail()
             );
 
+            System.out.println(
+                    "========================================"
+            );
+
         } catch (MessagingException e) {
 
-            throw new RuntimeException(
-                    "Failed to send employee welcome email",
-                    e
+            System.err.println(
+                    "EMAIL SENDING FAILED FOR: "
+                            + employee.getEmail()
             );
+
+            e.printStackTrace();
+
+        } catch (Exception e) {
+
+            System.err.println(
+                    "ASYNC EMAIL PROCESS FAILED FOR: "
+                            + employee.getEmail()
+            );
+
+            e.printStackTrace();
         }
     }
 

@@ -1,12 +1,10 @@
 package com.hrm.hrmauto.service;
 
-import com.hrm.hrmauto.entity.Role;
-
 import com.hrm.hrmauto.dto.EmployeeRequest;
 import com.hrm.hrmauto.dto.EmployeeResponse;
 import com.hrm.hrmauto.entity.Employee;
+import com.hrm.hrmauto.entity.Role;
 import com.hrm.hrmauto.entity.User;
-
 import com.hrm.hrmauto.repository.EmployeeRepository;
 import com.hrm.hrmauto.repository.UserRepository;
 
@@ -26,6 +24,9 @@ public class EmployeeService {
     private final LeaveBalanceService leaveBalanceService;
     private final EmployeeEmailService employeeEmailService;
 
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public EmployeeService(
             UserRepository userRepository,
@@ -40,6 +41,10 @@ public class EmployeeService {
         this.leaveBalanceService = leaveBalanceService;
         this.employeeEmailService = employeeEmailService;
     }
+
+    // =====================================================
+    // GET EMPLOYEE BY EMPLOYEE CODE
+    // =====================================================
 
     @Transactional(readOnly = true)
     public EmployeeResponse getEmployeeByEmployeeCode(
@@ -60,6 +65,7 @@ public class EmployeeService {
                 null
         );
     }
+
     // =====================================================
     // CREATE EMPLOYEE
     // =====================================================
@@ -68,11 +74,21 @@ public class EmployeeService {
     public EmployeeResponse createEmployee(
             EmployeeRequest request) {
 
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println(
+                "CREATE EMPLOYEE STARTED"
+        );
+
         // =================================================
-        // CHECK EMAIL
+        // 1. CHECK EMAIL
         // =================================================
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository
+                .findByEmail(request.getEmail())
+                .isPresent()) {
 
             throw new RuntimeException(
                     "User already exists with email: "
@@ -80,9 +96,8 @@ public class EmployeeService {
             );
         }
 
-
         // =================================================
-        // CHECK PHONE
+        // 2. CHECK PHONE
         // =================================================
 
         if (employeeRepository.existsByPhone(
@@ -94,9 +109,8 @@ public class EmployeeService {
             );
         }
 
-
         // =================================================
-        // GENERATE AUTOMATIC PASSWORD
+        // 3. GENERATE AUTOMATIC PASSWORD
         // =================================================
 
         String generatedPassword =
@@ -105,11 +119,12 @@ public class EmployeeService {
                         request.getPhone()
                 );
 
-        // Continue...
-
+        System.out.println(
+                "PASSWORD GENERATED"
+        );
 
         // =================================================
-        // 3. CREATE USER
+        // 4. CREATE USER
         // =================================================
 
         User user = new User();
@@ -131,9 +146,13 @@ public class EmployeeService {
         User savedUser =
                 userRepository.save(user);
 
+        System.out.println(
+                "USER CREATED: "
+                        + savedUser.getId()
+        );
 
         // =================================================
-        // 4. CREATE EMPLOYEE
+        // 5. CREATE EMPLOYEE
         // =================================================
 
         Employee employee = new Employee();
@@ -162,9 +181,8 @@ public class EmployeeService {
                 request.getJoiningDate()
         );
 
-
         // =================================================
-        // 5. GENERATE EMPLOYEE CODE AUTOMATICALLY
+        // 6. GENERATE EMPLOYEE CODE
         // =================================================
 
         String employeeCode =
@@ -174,18 +192,16 @@ public class EmployeeService {
                 employeeCode
         );
 
-
         // =================================================
-        // 6. CONNECT EMPLOYEE WITH USER
+        // 7. CONNECT EMPLOYEE WITH USER
         // =================================================
 
         employee.setUser(
                 savedUser
         );
 
-
         // =================================================
-        // 7. SAVE EMPLOYEE
+        // 8. SAVE EMPLOYEE
         // =================================================
 
         Employee savedEmployee =
@@ -193,46 +209,74 @@ public class EmployeeService {
                         employee
                 );
 
+        System.out.println(
+                "EMPLOYEE CREATED: "
+                        + savedEmployee.getId()
+        );
+
+        System.out.println(
+                "EMPLOYEE CODE: "
+                        + savedEmployee.getEmployeeCode()
+        );
 
         // =================================================
-        // 8. CREATE INITIAL LEAVE BALANCE
+        // 9. CREATE INITIAL LEAVE BALANCE
         // =================================================
 
         leaveBalanceService.createInitialBalance(
                 savedEmployee
         );
 
-
-        // =================================================
-        // 9. SEND WELCOME EMAIL
-        // =================================================
-
-        try {
-
-            employeeEmailService.sendEmployeeWelcomeEmail(
-                    savedEmployee,
-                    generatedPassword
-            );
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(
-                    "Employee created but welcome email could not be sent",
-                    e
-            );
-        }
-
-
-        // =================================================
-        // 10. RETURN RESPONSE
-        // =================================================
-
-        return convertToResponse(
-                savedEmployee,
-                "Employee created successfully"
+        System.out.println(
+                "LEAVE BALANCE CREATED"
         );
-    }
 
+        // =================================================
+        // 10. START ASYNC WELCOME EMAIL
+        // =================================================
+
+        System.out.println(
+                "STARTING ASYNC WELCOME EMAIL"
+        );
+
+        /*
+         * IMPORTANT:
+         *
+         * EmployeeEmailService.sendEmployeeWelcomeEmail()
+         * must contain @Async.
+         *
+         * EmployeeService itself does NOT need @Async.
+         */
+
+        employeeEmailService.sendEmployeeWelcomeEmail(
+                savedEmployee,
+                generatedPassword
+        );
+
+        System.out.println(
+                "ASYNC EMAIL REQUEST SUBMITTED"
+        );
+
+        // =================================================
+        // 11. RETURN RESPONSE
+        // =================================================
+
+        EmployeeResponse response =
+                convertToResponse(
+                        savedEmployee,
+                        "Employee created successfully"
+                );
+
+        System.out.println(
+                "RETURNING EMPLOYEE RESPONSE"
+        );
+
+        System.out.println(
+                "========================================"
+        );
+
+        return response;
+    }
 
     // =====================================================
     // GET ALL EMPLOYEES
@@ -252,7 +296,6 @@ public class EmployeeService {
                 )
                 .collect(Collectors.toList());
     }
-
 
     // =====================================================
     // GET EMPLOYEE BY DATABASE ID
@@ -278,7 +321,6 @@ public class EmployeeService {
         );
     }
 
-
     // =====================================================
     // GET EMPLOYEE BY PHONE
     // =====================================================
@@ -303,7 +345,6 @@ public class EmployeeService {
         );
     }
 
-
     // =====================================================
     // CONVERT ENTITY -> RESPONSE
     // =====================================================
@@ -312,19 +353,18 @@ public class EmployeeService {
             Employee employee,
             String message) {
 
-    	return new EmployeeResponse(
-    	        employee.getId(),
-    	        employee.getEmployeeCode(),
-    	        employee.getName(),
-    	        employee.getEmail(),
-    	        employee.getPhone(),
-    	        employee.getDepartment(),
-    	        employee.getDesignation(),
-    	        employee.getJoiningDate(),
-    	        message
-    	);
+        return new EmployeeResponse(
+                employee.getId(),
+                employee.getEmployeeCode(),
+                employee.getName(),
+                employee.getEmail(),
+                employee.getPhone(),
+                employee.getDepartment(),
+                employee.getDesignation(),
+                employee.getJoiningDate(),
+                message
+        );
     }
-
 
     // =====================================================
     // AUTOMATIC PASSWORD GENERATOR
@@ -381,7 +421,6 @@ public class EmployeeService {
 
         return namePart + phonePart;
     }
-
 
     // =====================================================
     // EMPLOYEE CODE GENERATOR

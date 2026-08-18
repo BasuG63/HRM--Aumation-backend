@@ -23,19 +23,13 @@ public class CorsConfig {
         // =====================================================
 
         configuration.setAllowedOrigins(
-                List.of(
-
-                        // Local React development
-                        "http://localhost:5173",
-                        "http://localhost:5175",
-
-                        // Current Vercel production domain
-                        "https://hrmauto.vercel.app",
-
-                        // Old Vercel domain - keep if still required
-                        "https://hrm-2-sooty.vercel.app"
-                )
-        );
+        	    List.of(
+        	        "http://localhost:5173",
+        	        "http://localhost:5174",
+        	        "http://localhost:5175",
+        	        "https://hrmauto.vercel.app"
+        	    )
+        	);
 
         // =====================================================
         // ALLOWED METHODS
