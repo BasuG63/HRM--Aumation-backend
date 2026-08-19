@@ -3,6 +3,7 @@ package com.hrm.hrmauto.repository;
 import com.hrm.hrmauto.entity.Employee;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -53,4 +54,23 @@ public interface EmployeeRepository
     // =====================================================
 
     boolean existsByEmail(String email);
+
+
+    // =====================================================
+    // GET HIGHEST FTC EMPLOYEE CODE NUMBER
+    // Example: FTC16 -> 16
+    // =====================================================
+
+    @Query(
+        value = """
+            SELECT COALESCE(
+                MAX(CAST(SUBSTRING(employee_code FROM 4) AS BIGINT)),
+                11
+            )
+            FROM employees
+            WHERE employee_code LIKE 'FTC%'
+            """,
+        nativeQuery = true
+    )
+    Long findMaxEmployeeCodeNumber();
 }

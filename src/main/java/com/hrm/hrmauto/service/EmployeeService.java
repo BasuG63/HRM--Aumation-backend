@@ -428,12 +428,9 @@ public class EmployeeService {
 
     private String generateEmployeeCode() {
 
-        long count =
-                employeeRepository.count();
+        Long maxNumber =
+                employeeRepository.findMaxEmployeeCodeNumber();
 
-        long nextNumber =
-                count + 12;
-
-        return "FTC" + nextNumber;
+        return "FTC" + (maxNumber + 1);
     }
 }

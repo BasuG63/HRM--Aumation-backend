@@ -38,10 +38,10 @@ public class EmployeeController {
     @GetMapping("/search")
     public ResponseEntity<EmployeeResponse> searchEmployee(
 
-            @RequestParam(required = false)
+            @RequestParam(value = "employeeCode", required = false)
             String employeeCode,
 
-            @RequestParam(required = false)
+            @RequestParam(value = "phone", required = false)
             String phone) {
 
         if (employeeCode != null && !employeeCode.isBlank()) {

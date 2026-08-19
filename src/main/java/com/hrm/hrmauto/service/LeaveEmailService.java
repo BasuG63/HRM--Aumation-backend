@@ -2,8 +2,11 @@ package com.hrm.hrmauto.service;
 
 import com.hrm.hrmauto.entity.LeaveApplication;
 
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,198 +20,473 @@ public class LeaveEmailService {
         this.mailSender = mailSender;
     }
 
-    // ==========================================
+    // =====================================================
     // LEAVE APPROVED EMAIL
-    // ==========================================
+    // =====================================================
 
     public void sendLeaveApprovedEmail(
             LeaveApplication application) {
 
-        String employeeEmail =
-                application
-                        .getEmployee()
-                        .getEmail();
+        try {
 
-        String employeeName =
-                application
-                        .getEmployee()
-                        .getName();
+            String employeeEmail =
+                    application.getEmployee().getEmail();
 
-        String employeeCode =
-                application
-                        .getEmployee()
-                        .getEmployeeCode();
+            String employeeName =
+                    application.getEmployee().getName();
 
-        String leaveType =
-                application
-                        .getLeaveType()
-                        .name();
+            String employeeCode =
+                    application.getEmployee().getEmployeeCode();
 
-        String startDate =
-                application
-                        .getStartDate()
-                        .toString();
+            String leaveType =
+                    application.getLeaveType().name();
 
-        String endDate =
-                application
-                        .getEndDate()
-                        .toString();
+            String startDate =
+                    application.getStartDate().toString();
 
-        int numberOfDays =
-                application
-                        .getNumberOfDays();
+            String endDate =
+                    application.getEndDate().toString();
 
-        SimpleMailMessage message =
-                new SimpleMailMessage();
+            int numberOfDays =
+                    application.getNumberOfDays();
 
-        message.setTo(employeeEmail);
+            System.out.println(
+                    "========================================"
+            );
 
-        message.setSubject(
-                "Leave Approved - "
-                        + employeeCode
-        );
+            System.out.println(
+                    "LEAVE APPROVAL EMAIL"
+            );
 
-        String body =
-                "Dear "
-                        + employeeName
-                        + ",\n\n"
+            System.out.println(
+                    "Employee: " + employeeName
+            );
 
-                        + "Your leave application has been "
-                        + "approved by the HR department.\n\n"
+            System.out.println(
+                    "Recipient: " + employeeEmail
+            );
 
-                        + "==============================\n"
-                        + "       LEAVE DETAILS\n"
-                        + "==============================\n\n"
+            System.out.println(
+                    "Leave ID: " + application.getId()
+            );
 
-                        + "Employee ID : "
-                        + employeeCode
-                        + "\n"
+            // =================================================
+            // CREATE MIME MESSAGE
+            // =================================================
 
-                        + "Employee Name : "
-                        + employeeName
-                        + "\n"
+            MimeMessage message =
+                    mailSender.createMimeMessage();
 
-                        + "Leave Type : "
-                        + leaveType
-                        + "\n"
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            message,
+                            true
+                    );
 
-                        + "Start Date : "
-                        + startDate
-                        + "\n"
+            // =================================================
+            // RECIPIENT
+            // =================================================
 
-                        + "End Date : "
-                        + endDate
-                        + "\n"
+            helper.setTo(employeeEmail);
 
-                        + "Number of Days : "
-                        + numberOfDays
-                        + "\n"
+            // =================================================
+            // SUBJECT
+            // =================================================
 
-                        + "Reason : "
-                        + application.getReason()
-                        + "\n"
+            helper.setSubject(
+                    "Leave Approved - "
+                            + employeeCode
+            );
 
-                        + "Status : APPROVED"
-                        + "\n\n"
+            // =================================================
+            // EMAIL BODY
+            // =================================================
 
-                        + "Your leave balance has been "
-                        + "updated automatically.\n\n"
+            String html =
+                    "<html>"
+                    + "<body style='"
+                    + "font-family:Arial,sans-serif;"
+                    + "background:#f4f6f8;"
+                    + "padding:20px;"
+                    + "'>"
 
-                        + "Regards,\n"
-                        + "HR Department\n"
-                        + "HRM Company";
+                    + "<div style='"
+                    + "max-width:650px;"
+                    + "margin:auto;"
+                    + "background:white;"
+                    + "border-radius:10px;"
+                    + "padding:30px;"
+                    + "border:1px solid #ddd;"
+                    + "'>"
 
-        message.setText(body);
+                    + "<h2 style='color:#1f4e79;'>"
+                    + "Leave Approved"
+                    + "</h2>"
 
-        mailSender.send(message);
+                    + "<p>"
+                    + "Dear <b>"
+                    + safe(employeeName)
+                    + "</b>,"
+                    + "</p>"
+
+                    + "<p>"
+                    + "Your leave application has been "
+                    + "approved by the HR department."
+                    + "</p>"
+
+                    + "<h3 style='color:#1f4e79;'>"
+                    + "Leave Details"
+                    + "</h3>"
+
+                    + "<table style='"
+                    + "border-collapse:collapse;"
+                    + "width:100%;"
+                    + "'>"
+
+                    + row(
+                            "Employee ID",
+                            employeeCode
+                    )
+
+                    + row(
+                            "Employee Name",
+                            employeeName
+                    )
+
+                    + row(
+                            "Leave Type",
+                            leaveType
+                    )
+
+                    + row(
+                            "Start Date",
+                            startDate
+                    )
+
+                    + row(
+                            "End Date",
+                            endDate
+                    )
+
+                    + row(
+                            "Number of Days",
+                            String.valueOf(numberOfDays)
+                    )
+
+                    + row(
+                            "Reason",
+                            application.getReason()
+                    )
+
+                    + row(
+                            "Status",
+                            "APPROVED"
+                    )
+
+                    + "</table>"
+
+                    + "<p style='"
+                    + "background:#d4edda;"
+                    + "padding:15px;"
+                    + "border:1px solid #c3e6cb;"
+                    + "'>"
+                    + "<b>Your leave has been approved.</b>"
+                    + "<br>"
+                    + "Your leave balance has been "
+                    + "updated automatically."
+                    + "</p>"
+
+                    + "<p>"
+                    + "Regards,<br>"
+                    + "<b>HR Department</b><br>"
+                    + "Future Transformer Company"
+                    + "</p>"
+
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+            helper.setText(
+                    html,
+                    true
+            );
+
+            // =================================================
+            // SEND
+            // =================================================
+
+            System.out.println(
+                    "SENDING LEAVE APPROVAL EMAIL TO: "
+                            + employeeEmail
+            );
+
+            mailSender.send(message);
+
+            System.out.println(
+                    "LEAVE APPROVAL EMAIL SENT SUCCESSFULLY TO: "
+                            + employeeEmail
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+        } catch (MessagingException e) {
+
+            System.err.println(
+                    "LEAVE APPROVAL EMAIL FAILED"
+            );
+
+            e.printStackTrace();
+
+        } catch (Exception e) {
+
+            System.err.println(
+                    "LEAVE APPROVAL EMAIL PROCESS FAILED"
+            );
+
+            e.printStackTrace();
+        }
     }
 
-    // ==========================================
+
+    // =====================================================
     // LEAVE REJECTED EMAIL
-    // ==========================================
+    // =====================================================
 
     public void sendLeaveRejectedEmail(
             LeaveApplication application) {
 
-        String employeeEmail =
-                application
-                        .getEmployee()
-                        .getEmail();
+        try {
 
-        String employeeName =
-                application
-                        .getEmployee()
-                        .getName();
+            String employeeEmail =
+                    application.getEmployee().getEmail();
 
-        String employeeCode =
-                application
-                        .getEmployee()
-                        .getEmployeeCode();
+            String employeeName =
+                    application.getEmployee().getName();
 
-        SimpleMailMessage message =
-                new SimpleMailMessage();
+            String employeeCode =
+                    application.getEmployee().getEmployeeCode();
 
-        message.setTo(employeeEmail);
+            System.out.println(
+                    "========================================"
+            );
 
-        message.setSubject(
-                "Leave Rejected - "
-                        + employeeCode
-        );
+            System.out.println(
+                    "LEAVE REJECTION EMAIL"
+            );
 
-        String body =
-                "Dear "
-                        + employeeName
-                        + ",\n\n"
+            System.out.println(
+                    "Employee: " + employeeName
+            );
 
-                        + "Your leave application has been "
-                        + "reviewed by the HR department.\n\n"
+            System.out.println(
+                    "Recipient: " + employeeEmail
+            );
 
-                        + "==============================\n"
-                        + "       LEAVE DETAILS\n"
-                        + "==============================\n\n"
+            // =================================================
+            // CREATE MIME MESSAGE
+            // =================================================
 
-                        + "Employee ID : "
-                        + employeeCode
-                        + "\n"
+            MimeMessage message =
+                    mailSender.createMimeMessage();
 
-                        + "Leave Type : "
-                        + application
-                        .getLeaveType()
-                        .name()
-                        + "\n"
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            message,
+                            true
+                    );
 
-                        + "Start Date : "
-                        + application
-                        .getStartDate()
-                        + "\n"
+            helper.setTo(employeeEmail);
 
-                        + "End Date : "
-                        + application
-                        .getEndDate()
-                        + "\n"
+            helper.setSubject(
+                    "Leave Rejected - "
+                            + employeeCode
+            );
 
-                        + "Number of Days : "
-                        + application
-                        .getNumberOfDays()
-                        + "\n"
+            String html =
+                    "<html>"
+                    + "<body style='"
+                    + "font-family:Arial,sans-serif;"
+                    + "background:#f4f6f8;"
+                    + "padding:20px;"
+                    + "'>"
 
-                        + "Reason : "
-                        + application
-                        .getReason()
-                        + "\n"
+                    + "<div style='"
+                    + "max-width:650px;"
+                    + "margin:auto;"
+                    + "background:white;"
+                    + "border-radius:10px;"
+                    + "padding:30px;"
+                    + "border:1px solid #ddd;"
+                    + "'>"
 
-                        + "Status : REJECTED"
-                        + "\n\n"
+                    + "<h2 style='color:#c0392b;'>"
+                    + "Leave Rejected"
+                    + "</h2>"
 
-                        + "Your leave balance has not been "
-                        + "deducted.\n\n"
+                    + "<p>"
+                    + "Dear <b>"
+                    + safe(employeeName)
+                    + "</b>,"
+                    + "</p>"
 
-                        + "Regards,\n"
-                        + "HR Department\n"
-                        + "HRM Company";
+                    + "<p>"
+                    + "Your leave application has been "
+                    + "reviewed by the HR department."
+                    + "</p>"
 
-        message.setText(body);
+                    + "<h3>Leave Details</h3>"
 
-        mailSender.send(message);
+                    + "<table style='"
+                    + "border-collapse:collapse;"
+                    + "width:100%;"
+                    + "'>"
+
+                    + row(
+                            "Employee ID",
+                            employeeCode
+                    )
+
+                    + row(
+                            "Leave Type",
+                            application
+                                    .getLeaveType()
+                                    .name()
+                    )
+
+                    + row(
+                            "Start Date",
+                            String.valueOf(
+                                    application.getStartDate()
+                            )
+                    )
+
+                    + row(
+                            "End Date",
+                            String.valueOf(
+                                    application.getEndDate()
+                            )
+                    )
+
+                    + row(
+                            "Number of Days",
+                            String.valueOf(
+                                    application.getNumberOfDays()
+                            )
+                    )
+
+                    + row(
+                            "Reason",
+                            application.getReason()
+                    )
+
+                    + row(
+                            "Status",
+                            "REJECTED"
+                    )
+
+                    + "</table>"
+
+                    + "<p style='"
+                    + "background:#f8d7da;"
+                    + "padding:15px;"
+                    + "border:1px solid #f5c6cb;"
+                    + "'>"
+                    + "<b>Your leave request has been rejected.</b>"
+                    + "<br>"
+                    + "Your leave balance has not been deducted."
+                    + "</p>"
+
+                    + "<p>"
+                    + "Regards,<br>"
+                    + "<b>HR Department</b><br>"
+                    + "Future Transformer Company"
+                    + "</p>"
+
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+            helper.setText(
+                    html,
+                    true
+            );
+
+            System.out.println(
+                    "SENDING LEAVE REJECTION EMAIL TO: "
+                            + employeeEmail
+            );
+
+            mailSender.send(message);
+
+            System.out.println(
+                    "LEAVE REJECTION EMAIL SENT SUCCESSFULLY TO: "
+                            + employeeEmail
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+        } catch (MessagingException e) {
+
+            System.err.println(
+                    "LEAVE REJECTION EMAIL FAILED"
+            );
+
+            e.printStackTrace();
+
+        } catch (Exception e) {
+
+            System.err.println(
+                    "LEAVE REJECTION EMAIL PROCESS FAILED"
+            );
+
+            e.printStackTrace();
+        }
+    }
+
+
+    // =====================================================
+    // HTML TABLE ROW
+    // =====================================================
+
+    private String row(
+            String label,
+            String value) {
+
+        return "<tr>"
+
+                + "<td style='"
+                + "padding:10px;"
+                + "border:1px solid #ddd;"
+                + "font-weight:bold;"
+                + "width:40%;"
+                + "'>"
+                + safe(label)
+                + "</td>"
+
+                + "<td style='"
+                + "padding:10px;"
+                + "border:1px solid #ddd;"
+                + "'>"
+                + safe(value)
+                + "</td>"
+
+                + "</tr>";
+    }
+
+
+    // =====================================================
+    // NULL SAFE
+    // =====================================================
+
+    private String safe(
+            String value) {
+
+        return value == null
+                ? "N/A"
+                : value;
     }
 }

@@ -4,7 +4,6 @@ import com.hrm.hrmauto.dto.LeaveApplicationResponse;
 import com.hrm.hrmauto.service.LeaveApplicationService;
 
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +25,11 @@ public class HRLeaveController {
     // ==========================================
 
     @GetMapping("/pending")
-    public ResponseEntity<
-            List<LeaveApplicationResponse>>
+    public ResponseEntity<List<LeaveApplicationResponse>>
     getPendingLeaves() {
 
         return ResponseEntity.ok(
-                leaveService
-                        .getPendingApplications()
+                leaveService.getPendingApplications()
         );
     }
 
@@ -43,11 +40,10 @@ public class HRLeaveController {
     @PutMapping("/{id}/approve")
     public ResponseEntity<LeaveApplicationResponse>
     approveLeave(
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
 
         return ResponseEntity.ok(
-                leaveService
-                        .approveLeave(id)
+                leaveService.approveLeave(id)
         );
     }
 
@@ -58,11 +54,10 @@ public class HRLeaveController {
     @PutMapping("/{id}/reject")
     public ResponseEntity<LeaveApplicationResponse>
     rejectLeave(
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
 
         return ResponseEntity.ok(
-                leaveService
-                        .rejectLeave(id)
+                leaveService.rejectLeave(id)
         );
     }
 }
